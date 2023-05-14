@@ -1,56 +1,41 @@
-class drop {
+class Drop {
   constructor() {
-    this.leftRange = -width / 2;
-    this.rightRange = width * 1.5;
-    this.topRange = -height * 2;
-    this.dropMinSize = 1;
-    this.dropMaxSize = 6;
+    this.x = 0;
+    this.y = 0;
+    this.size = 0;
+    this.thickness = 0;
+    this.stroke = 0;
+    this.mass = 0;
+    this.velocity = 0;
 
-    this.reset();
+    this.regen();
   }
 
-  setNormalDrop() {
-    this.size = random(this.dropMinSize, this.dropMaxSize);
-    this.thickness = 1;
-    this.stroke = map(this.size, this.dropMinSize, this.dropMaxSize, 50, 200, true);
+  minimumSize() {
+    return 1;
   }
-
-  setBigDrop() {
-    this.size = random(this.dropMinSize * 3, this.dropMaxSize * 3);
-    this.thickness = 2;
-    this.stroke = 200;
+  maximumSize() {
+    return 6;
   }
-
-  reset() {
-    this.x = random(this.leftRange, this.rightRange);
-    this.y = random(0, this.topRange);
-
-    if (random() > 0.01) {
-      this.setNormalDrop();
-    }
-    else this.setBigDrop();
-
+  calcMass() {
     this.mass = this.size * this.thickness;
-    this.speed = map(this.mass, this.dropMinSize, this.dropMaxSize * 2, 7, 19, true);
+  }
+  calcVelocity() {
+    this.velocity = map(this.mass, this.minimumSize(), this.maximumSize() * 2, 7, 19, true);
   }
 
-  updatePos() {
-    this.y += mouseIsPressed ? this.speed * 1.5 : this.speed;
-    this.x += wind;
+  regen() {
+    this.size = random(this.minimumSize(), this.maximumSize() * 3);
+    this.stroke = map(this.size, this.minimumSize(), this.maximumSize() * 3, 50, 200, true);
+    this.thickness = this.stroke > 198 ? 2 : 1;
+
+    this.calcMass();
+    this.calcVelocity();
   }
 
-  fixPos() {
-    if (this.y > height) this.reset();
-  }
-
-  update() {
-    this.updatePos();
-    this.fixPos();
-  }
-
-  draw() {
+  draw(wind) {
     stroke(this.stroke);
     strokeWeight(this.thickness);
-    line(this.x, this.y, this.x + wind, this.y + this.size);
+    line(this.x, this.y, this.x + wind / 2, this.y + this.size);
   }
 }

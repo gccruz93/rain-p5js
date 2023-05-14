@@ -1,24 +1,53 @@
-let drops = [];
-let wind = 0;
-const max_drops = 500;
-const max_wind_force = 6;
-const min_wind_force = -max_wind_force;
+const world = new World();
+const MAX_DROPS = 500;
 
 function setup() {
   createCanvas(800, 600);
-  for (let i = 0; i < max_drops; i++) drops.push(new drop());
+  for (let i = 0; i < MAX_DROPS; i++) {
+    const drop = new Drop();
+    drop.x = random(world.spawnRangeArea.left, world.spawnRangeArea.right);
+    drop.y = random(0, world.spawnRangeArea.top);
+    world.drops.push(drop)
+  };
 }
 
 function updateWind() {
-  wind = map(mouseX, 0, width, min_wind_force, max_wind_force, true);
+  world.wind = map(mouseX, 0, width, -world.maxWindForce(), world.maxWindForce(), true);
+}
+
+function updateSpawnRangeArea() {
+  world.spawnRangeArea.left = -width / 2;
+  world.spawnRangeArea.right = width * 1.5;
+  world.spawnRangeArea.top = -height * 2;
 }
 
 function draw() {
-  background(30);
-  updateWind();
+  if (keyIsDown(32)) return;
 
-  drops.forEach(drop => {
-    drop.update();
-    drop.draw();
+  /**
+   * Updates
+   */
+  updateWind();
+  updateSpawnRangeArea();
+
+  /**
+   * Draws
+   */
+  background(30);
+  world.drops.forEach(drop => {
+    if (mouseIsPressed && mouseButton === LEFT && drop.size > 3) {
+      drop.y += drop.velocity * 1.5;
+    } else {
+      drop.y += drop.velocity;
+    }
+    drop.x += world.wind;
+
+    drop.draw(world.wind);
+
+    if (drop.y > height) {
+      drop.x = random(world.spawnRangeArea.left, world.spawnRangeArea.right);
+      drop.y = random(0, world.spawnRangeArea.top);
+      drop.regen();
+    }
   })
 }
